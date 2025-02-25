@@ -1,0 +1,373 @@
+
+
+--Tablolar
+
+CREATE TABLE [dbo].[Branch] (
+    [Id]   INT           IDENTITY (1, 1) NOT NULL,
+    [Name] NVARCHAR (50) NULL,
+    CONSTRAINT [PK_Branch] PRIMARY KEY CLUSTERED ([Id] ASC)
+);
+
+
+CREATE TABLE [dbo].[Accounts] (
+    [Id]          INT          IDENTITY (1, 1) NOT NULL,
+    [CustomerId]  INT          NOT NULL,
+    [EmployeeId]  INT          NOT NULL,
+    [Amount]      MONEY        NOT NULL,
+    [CreatedDate] DATETIME     NOT NULL,
+    [IsBlocked]   NVARCHAR (5) NOT NULL,
+    CONSTRAINT [PK_Accounts] PRIMARY KEY CLUSTERED ([Id] ASC),
+    CONSTRAINT [FK_Accounts_Customers] FOREIGN KEY ([CustomerId]) REFERENCES [dbo].[Customers] ([Id]),
+    CONSTRAINT [FK_Accounts_Employees] FOREIGN KEY ([EmployeeId]) REFERENCES [dbo].[Employees] ([Id])
+);
+
+
+CREATE TABLE [dbo].[CreditCards] (
+    [Id]             BIGINT       IDENTITY (1, 1) NOT NULL,
+    [CreditId]       INT          NOT NULL,
+    [Amount]         MONEY        NOT NULL,
+    [CVV]            INT          NOT NULL,
+    [Password]       INT          NOT NULL,
+    [ExpirationDate] DATETIME     NULL,
+    [CreatedDate]    DATETIME     NULL,
+    [IsBlocked]      NVARCHAR (5) NULL,
+    CONSTRAINT [PK_CreditCards] PRIMARY KEY CLUSTERED ([Id] ASC),
+    CONSTRAINT [FK_CreditCards_Credits] FOREIGN KEY ([CreditId]) REFERENCES [dbo].[Credits] ([Id])
+);
+
+
+CREATE TABLE [dbo].[Credits] (
+    [Id]           INT   IDENTITY (1, 1) NOT NULL,
+    [TypeId]       INT   NOT NULL,
+    [AccountId]    INT   NOT NULL,
+    [LoanedAmount] MONEY NULL,
+    [RefundAmount] MONEY NULL,
+    CONSTRAINT [PK_Credits] PRIMARY KEY CLUSTERED ([Id] ASC),
+    CONSTRAINT [FK_Credits_Accounts] FOREIGN KEY ([AccountId]) REFERENCES [dbo].[Accounts] ([Id]),
+    CONSTRAINT [FK_Credits_CreditTypes] FOREIGN KEY ([TypeId]) REFERENCES [dbo].[CreditTypes] ([Id])
+);
+
+
+CREATE TABLE [dbo].[CreditTypes] (
+    [Id]          INT           IDENTITY (1, 1) NOT NULL,
+    [Name]        NVARCHAR (50) NOT NULL,
+    [CreatedDate] DATETIME      NULL,
+    [IsValid]     NVARCHAR (5)  NOT NULL,
+    CONSTRAINT [PK_CreditTypes] PRIMARY KEY CLUSTERED ([Id] ASC)
+);
+
+
+
+CREATE TABLE [dbo].[Customers] (
+    [Id]        INT            IDENTITY (1, 1) NOT NULL,
+    [Name]      NVARCHAR (50)  NOT NULL,
+    [Surname]   NVARCHAR (50)  NOT NULL,
+    [TC]        NVARCHAR (11)  NOT NULL,
+    [Birthdate] DATETIME       NULL,
+    [HireDate]  DATETIME       NULL,
+    [Adress]    NVARCHAR (100) NULL,
+    CONSTRAINT [PK_Customers] PRIMARY KEY CLUSTERED ([Id] ASC)
+);
+
+
+CREATE TABLE [dbo].[Departments] (
+    [Id]       INT           IDENTITY (1, 1) NOT NULL,
+    [BranchId] INT           NULL,
+    [Name]     NVARCHAR (50) NOT NULL,
+    CONSTRAINT [PK_Departments] PRIMARY KEY CLUSTERED ([Id] ASC),
+    CONSTRAINT [FK_Departments_Branch] FOREIGN KEY ([BranchId]) REFERENCES [dbo].[Branch] ([Id])
+);
+
+
+CREATE TABLE [dbo].[Employees] (
+    [Id]           INT            IDENTITY (1, 1) NOT NULL,
+    [Name]         NVARCHAR (50)  NOT NULL,
+    [Surname]      NVARCHAR (50)  NOT NULL,
+    [DepartmentId] INT            NOT NULL,
+    [PositionId]   INT            NULL,
+    [TC]           NVARCHAR (11)  NOT NULL,
+    [Birthdate]    DATETIME       NULL,
+    [Adress]       NVARCHAR (100) NULL,
+    CONSTRAINT [PK_Employees] PRIMARY KEY CLUSTERED ([Id] ASC),
+    CONSTRAINT [FK_Employees_Departments] FOREIGN KEY ([DepartmentId]) REFERENCES [dbo].[Departments] ([Id]),
+    CONSTRAINT [FK_Employees_Positions] FOREIGN KEY ([PositionId]) REFERENCES [dbo].[Positions] ([Id])
+);
+
+
+CREATE TABLE [dbo].[Positions] (
+    [Id]   INT           IDENTITY (1, 1) NOT NULL,
+    [Name] NVARCHAR (50) NOT NULL,
+    CONSTRAINT [PK_Positions] PRIMARY KEY CLUSTERED ([Id] ASC)
+);
+
+
+CREATE TABLE [dbo].[Transfers] (
+    [Id]           INT           IDENTITY (1, 1) NOT NULL,
+    [SenderId]     INT           NOT NULL,
+    [ReceiverId]   INT           NOT NULL,
+    [Amount]       MONEY         NOT NULL,
+    [IsSuccess]    NVARCHAR (50) NOT NULL,
+    [TransferDate] DATETIME      NOT NULL,
+    [ArrivalDate]  DATETIME      NOT NULL,
+    CONSTRAINT [PK_Transfers] PRIMARY KEY CLUSTERED ([Id] ASC),
+    CONSTRAINT [FK_Transfers_AccountsReceiver] FOREIGN KEY ([ReceiverId]) REFERENCES [dbo].[Accounts] ([Id]),
+    CONSTRAINT [FK_Transfers_AccountsSender] FOREIGN KEY ([SenderId]) REFERENCES [dbo].[Accounts] ([Id])
+);
+
+--Dataları ekleme
+
+-- Insert into Branch table
+INSERT INTO [dbo].[Branch] ([Name]) VALUES 
+('Main Branch'),
+('North Branch'),
+('South Branch'),
+('East Branch'),
+('West Branch');
+
+-- Insert into Accounts table
+INSERT INTO [dbo].[Accounts] ([CustomerId], [EmployeeId], [Amount], [CreatedDate], [IsBlocked]) VALUES
+(1, 1, 5000.00, GETDATE(), 'No'),
+(2, 2, 10000.00, GETDATE(), 'No'),
+(3, 3, 2000.00, GETDATE(), 'Yes'),
+(4, 4, 1500.00, GETDATE(), 'No'),
+(5, 5, 3000.00, GETDATE(), 'No');
+
+-- Insert into CreditCards table
+INSERT INTO [dbo].[CreditCards] ([CreditId], [Amount], [CVV], [Password], [ExpirationDate], [CreatedDate], [IsBlocked]) VALUES
+(1, 5000.00, 123, 4567, '2026-12-31', GETDATE(), 'No'),
+(2, 10000.00, 234, 1234, '2025-05-31', GETDATE(), 'No'),
+(3, 2000.00, 345, 5678, '2027-07-31', GETDATE(), 'Yes'),
+(4, 1500.00, 456, 6789, '2026-03-31', GETDATE(), 'No'),
+(5, 3000.00, 567, 7890, '2025-11-30', GETDATE(), 'No');
+
+-- Insert into Credits table
+INSERT INTO [dbo].[Credits] ([TypeId], [AccountId], [LoanedAmount], [RefundAmount]) VALUES
+(1, 1, 1000.00, 0.00),
+(2, 2, 5000.00, 1000.00),
+(3, 3, 2000.00, 500.00),
+(1, 4, 1500.00, 500.00),
+(2, 5, 3000.00, 1000.00);
+
+-- Insert into CreditTypes table
+INSERT INTO [dbo].[CreditTypes] ([Name], [CreatedDate], [IsValid]) VALUES
+('Personal Loan', GETDATE(), 'Yes'),
+('Business Loan', GETDATE(), 'Yes'),
+('Mortgage', GETDATE(), 'Yes'),
+('Auto Loan', GETDATE(), 'No'),
+('Student Loan', GETDATE(), 'Yes');
+
+-- Insert into Customers table
+INSERT INTO [dbo].[Customers] ([Name], [Surname], [TC], [Birthdate], [HireDate], [Adress]) VALUES
+('John', 'Doe', '12345678901', '1990-05-15', '2020-06-01', '123 Main St'),
+('Jane', 'Smith', '23456789012', '1985-07-20', '2018-03-10', '456 Elm St'),
+('Robert', 'Brown', '34567890123', '1992-11-30', '2022-01-22', '789 Oak St'),
+('Emily', 'Davis', '45678901234', '1988-09-12', '2021-04-14', '321 Pine St'),
+('Michael', 'Wilson', '56789012345', '1995-02-25', '2023-05-18', '654 Birch St');
+
+-- Insert into Departments table
+INSERT INTO [dbo].[Departments] ([BranchId], [Name]) VALUES
+(1, 'HR'),
+(2, 'Finance'),
+(3, 'IT'),
+(4, 'Marketing'),
+(5, 'Sales');
+
+-- Insert into Employees table
+INSERT INTO [dbo].[Employees] ([Name], [Surname], [DepartmentId], [PositionId], [TC], [Birthdate], [Adress]) VALUES
+('Alice', 'Green', 1, 1, '67890123456', '1987-03-14', '135 Cedar St'),
+('Bob', 'White', 2, 2, '78901234567', '1990-08-23', '246 Maple St'),
+('Charlie', 'Black', 3, 3, '89012345678', '1985-11-30', '357 Walnut St'),
+('David', 'Blue', 4, 4, '90123456789', '1992-06-12', '468 Cherry St'),
+('Eva', 'Gray', 5, 5, '12345678901', '1993-09-20', '579 Palm St');
+
+-- Insert into Positions table
+INSERT INTO [dbo].[Positions] ([Name]) VALUES
+('Manager'),
+('Assistant'),
+('Analyst'),
+('Director'),
+('Supervisor');
+
+-- Insert into Transfers table
+INSERT INTO [dbo].[Transfers] ([SenderId], [ReceiverId], [Amount], [IsSuccess], [TransferDate], [ArrivalDate]) VALUES
+(1, 2, 1000.00, 'Yes', GETDATE(), GETDATE()),
+(2, 3, 500.00, 'No', GETDATE(), GETDATE()),
+(3, 4, 300.00, 'Yes', GETDATE(), GETDATE()),
+(4, 5, 1500.00, 'Yes', GETDATE(), GETDATE()),
+(5, 1, 250.00, 'No', GETDATE(), GETDATE());
+
+
+
+--Procedureler
+
+
+CREATE PROCEDURE DepositMoney
+    @AccountId INT,  
+    @Amount MONEY    
+AS
+BEGIN
+    UPDATE dbo.Accounts
+    SET Amount = Amount + @Amount
+    WHERE Id = @AccountId;
+    PRINT 'Para başarıyla yatırıldı.';
+END;
+
+go
+CREATE PROCEDURE WithdrawMoney
+    @AccountId INT,  
+    @Amount MONEY    
+AS
+BEGIN
+    IF EXISTS (SELECT 1 FROM dbo.Accounts WHERE Id = @AccountId AND Amount >= @Amount)
+    BEGIN
+
+        UPDATE dbo.Accounts
+        SET Amount = Amount - @Amount
+        WHERE Id = @AccountId;
+        PRINT 'Para başarıyla çekildi.';
+    END
+    ELSE
+    BEGIN
+        PRINT 'Yetersiz bakiye!';
+    END
+END;
+
+
+DROP PROCEDURE IF EXISTS dbo.TransferMoney;
+
+go
+ CREATE PROCEDURE dbo.TransferMoney
+    @SenderAccountId INT,      -- Gönderen hesap ID'si
+    @ReceiverAccountId INT,    -- Alıcı hesap ID'si
+    @Amount MONEY              -- Transfer edilecek miktar
+AS
+BEGIN
+    -- Değişkenler
+    DECLARE @SenderBalance MONEY;
+    DECLARE @ReceiverBalance MONEY;
+
+    -- Gönderen ve alıcının hesap bakiyelerini kontrol et
+    SELECT @SenderBalance = Amount
+    FROM dbo.Accounts
+    WHERE Id = @SenderAccountId;
+    
+    SELECT @ReceiverBalance = Amount
+    FROM dbo.Accounts
+    WHERE Id = @ReceiverAccountId;
+
+    -- Gönderen hesap var mı ve bakiyesini kontrol et
+    IF @SenderBalance IS NULL
+    BEGIN
+        PRINT 'Gönderen hesap bulunamadı';
+        RETURN;
+    END
+    
+    -- Alıcı hesap var mı kontrol et
+    IF @ReceiverBalance IS NULL
+    BEGIN
+        PRINT 'Alıcı hesap bulunamadı';
+        RETURN;
+    END
+
+    -- Yetersiz bakiye kontrolü
+    IF @SenderBalance < @Amount
+    BEGIN
+        PRINT 'Yetersiz bakiye, transfer başarısız';
+        -- Başarısız transfer kaydını oluştur
+        INSERT INTO dbo.Transfers (SenderId, ReceiverId, Amount, IsSuccess, TransferDate, ArrivalDate)
+        VALUES (@SenderAccountId, @ReceiverAccountId, @Amount, 'Failed', GETDATE(), GETDATE());
+        RETURN;
+    END
+
+    -- Gönderen hesaptan para çekme
+    UPDATE dbo.Accounts
+    SET Amount = @SenderBalance - @Amount
+    WHERE Id = @SenderAccountId;
+    
+    -- Alıcıya para yatırma
+    UPDATE dbo.Accounts
+    SET Amount = @ReceiverBalance + @Amount
+    WHERE Id = @ReceiverAccountId;
+
+    -- Başarılı transfer kaydını oluştur
+    INSERT INTO dbo.Transfers (SenderId, ReceiverId, Amount, IsSuccess, TransferDate, ArrivalDate)
+    VALUES (@SenderAccountId, @ReceiverAccountId, @Amount, 'Success', GETDATE(), GETDATE());
+    
+    PRINT 'Transfer başarılı';
+END;
+
+
+
+
+EXEC dbo.TransferMoney @SenderAccountId = 1, @ReceiverAccountId = 2, @Amount = 1000;
+
+
+
+EXEC DepositMoney @AccountId = 1, @Amount = 500;
+
+EXEC WithdrawMoney @AccountId = 1, @Amount = 500;
+
+EXEC TransferMoney @SenderAccountId = 4 ,@ReceiverAccountId = 5, @Amount = 15000;
+
+EXEC DepositMoney @AccountId = 1000, @Amount = 500;
+
+EXEC WithdrawMoney @AccountId = 1, @Amount = 5000;
+
+
+
+go
+CREATE PROCEDURE dbo.InsertEmployee
+    @Name NVARCHAR(50),        -- Çalışanın adı
+    @Surname NVARCHAR(50),     -- Çalışanın soyadı
+    @DepartmentId INT,         -- Çalışanın bağlı olduğu departman ID'si
+    @PositionId INT,           -- Çalışanın pozisyon ID'si
+    @TC NVARCHAR(11),          -- Çalışanın T.C. kimlik numarası
+    @Birthdate DATETIME,       -- Çalışanın doğum tarihi
+    @Adress NVARCHAR(100)      -- Çalışanın adresi
+AS
+BEGIN
+    -- Değişkenler
+    DECLARE @DepartmentExists INT;
+    DECLARE @PositionExists INT;
+
+    -- Departman var mı kontrol et
+    SELECT @DepartmentExists = COUNT(*) 
+    FROM dbo.Departments 
+    WHERE Id = @DepartmentId;
+
+    -- Pozisyon var mı kontrol et
+    SELECT @PositionExists = COUNT(*) 
+    FROM dbo.Positions 
+    WHERE Id = @PositionId;
+
+    -- Eğer departman veya pozisyon yoksa, veri eklenmesin
+    IF @DepartmentExists = 0
+    BEGIN
+        PRINT 'Geçersiz Departman ID. Çalışan eklenemedi.';
+        RETURN;
+    END
+
+    IF @PositionExists = 0
+    BEGIN
+        PRINT 'Geçersiz Pozisyon ID. Çalışan eklenemedi.';
+        RETURN;
+    END
+
+    -- Hem departman hem de pozisyon geçerli ise, çalışanı ekle
+    INSERT INTO dbo.Employees (Name, Surname, DepartmentId, PositionId, TC, Birthdate, Adress)
+    VALUES (@Name, @Surname, @DepartmentId, @PositionId, @TC, @Birthdate, @Adress);
+
+    PRINT 'Çalışan başarıyla eklendi.';
+END;
+
+
+EXEC dbo.InsertEmployee 
+    @Name = 'Yusuf', 
+    @Surname = 'Ziya', 
+    @DepartmentId = 2, 
+    @PositionId = 3 
+    @TC = '12345678901', 
+    @Birthdate = '1985-10-25', 
+    @Adress = 'İstanbul, Türkiye';
+
+
